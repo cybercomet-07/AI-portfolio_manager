@@ -1,1 +1,1 @@
-worker: python force_start.py
+worker: python test_deployment.py

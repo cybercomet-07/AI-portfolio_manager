@@ -270,7 +270,18 @@ Focus on risk management and provide clear reasoning for your decision.
 # Example usage
 if __name__ == "__main__":
     # Test the AI trading engine
-    engine = AITradingEngine("AIzaSyABwil0lzrXXQ58jPFfmPS6HlGUNfA1LMc")
+    import os
+    from dotenv import load_dotenv
+    
+    load_dotenv()
+    api_key = os.getenv("GEMINI_API_KEY", "your_gemini_api_key_here")
+    
+    if api_key == "your_gemini_api_key_here":
+        print("❌ Please set your GEMINI_API_KEY in the .env file")
+        print("💡 Get your API key from: https://makersuite.google.com/app/apikey")
+        exit(1)
+    
+    engine = AITradingEngine(api_key)
     
     # Test with a sample stock
     decision = engine.get_ai_decision("AAPL")

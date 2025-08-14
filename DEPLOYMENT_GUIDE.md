@@ -96,8 +96,8 @@ GEMINI_API_KEY=your_gemini_api_key_here
 ### In Cloud Platform Dashboard
 ```
 # ✅ ACTUAL API KEYS HERE (Encrypted)
-ALPACA_API_KEY=PKFAV4L15F9NWJBY98VO
-GEMINI_API_KEY=AIzaSyABwil0lzrXXQ58jPFfmPS6HlGUNfA1LMc
+ALPACA_API_KEY=your_actual_alpaca_key_here
+GEMINI_API_KEY=your_actual_gemini_key_here
 ```
 
 ## 📊 **Monitoring Your Deployed Bot**

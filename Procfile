@@ -1,1 +1,1 @@
-worker: python simple_test.py
+worker: python railway_worker.py

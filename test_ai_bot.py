@@ -65,7 +65,7 @@ def test_ai_engine():
         from ai_trading_engine import AITradingEngine
         
         # Initialize with your API key
-        engine = AITradingEngine(os.getenv("GEMINI_API_KEY", "your_gemini_api_key"))
+        engine = AITradingEngine("AIzaSyD-LK5w888yjHFW24vcN_brFIjML0HimhE")
         print("✅ AI Trading Engine initialized")
         
         # Test technical indicators
@@ -108,8 +108,8 @@ def test_alpaca_connection():
         from alpaca_trade_api.rest import REST
         
         # Your Alpaca credentials
-        API_KEY = "PKFAV4L15F9NWJBY98VO"
-        API_SECRET = "0IOF9cXkck2c0IEps1NbWBjZDqKcOLxaYVacfESY"
+        API_KEY = os.getenv("ALPACA_API_KEY", "PKFAV4L15F9NWJBY98VO")
+        API_SECRET = os.getenv("ALPACA_SECRET_KEY", "0IOF9cXkck2c0IEps1NbWBjZDqKcOLxaYVacfESY")
         BASE_URL = 'https://paper-api.alpaca.markets'
         
         api = REST(API_KEY, API_SECRET, BASE_URL)
@@ -168,8 +168,8 @@ def test_portfolio_tracker():
         from portfolio_tracker import PortfolioTracker
         
         # Initialize Alpaca API
-        API_KEY = "PKFAV4L15F9NWJBY98VO"
-        API_SECRET = "0IOF9cXkck2c0IEps1NbWBjZDqKcOLxaYVacfESY"
+        API_KEY = os.getenv("ALPACA_API_KEY", "PKFAV4L15F9NWJBY98VO")
+        API_SECRET = os.getenv("ALPACA_SECRET_KEY", "0IOF9cXkck2c0IEps1NbWBjZDqKcOLxaYVacfESY")
         BASE_URL = 'https://paper-api.alpaca.markets'
         api = REST(API_KEY, API_SECRET, BASE_URL)
         

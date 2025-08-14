@@ -6,6 +6,7 @@ A simple AI-powered paper trading bot using Google Gemini AI
 
 import os
 import sys
+import time
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -66,8 +67,22 @@ def main():
         # Run one analysis cycle immediately
         bot.run_ai_analysis_cycle()
         
-        # Then start the normal bot loop
-        bot.run_bot()
+        # Start continuous trading loop (bypassing market hours check)
+        print("🔄 Starting continuous trading loop...")
+        while True:
+            try:
+                # Run AI analysis cycle
+                bot.run_ai_analysis_cycle()
+                
+                print("⏸ Sleeping for 30 minutes...\n")
+                time.sleep(1800)  # 30 minutes
+                
+            except KeyboardInterrupt:
+                print("\n🛑 AI Trading Bot stopped by user")
+                break
+            except Exception as e:
+                print(f"❌ Error in main bot loop: {e}")
+                time.sleep(60)  # Wait 1 minute before retrying
         
     except ImportError as e:
         print(f"❌ Import error: {e}")

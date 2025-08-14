@@ -1,1 +1,1 @@
-worker: python test_deployment.py
+worker: python debug_railway.py

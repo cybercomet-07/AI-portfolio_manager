@@ -48,6 +48,25 @@ def main():
         # Initialize and run the bot
         bot = AITradingBot()
         print("🚀 Starting AI Portfolio Manager...")
+        
+        # Send test message first
+        try:
+            bot.send_whatsapp_message("🤖 AI Trading Bot is starting up! Market analysis beginning...")
+            print("✅ Test WhatsApp message sent")
+        except Exception as e:
+            print(f"⚠️ WhatsApp test failed: {e}")
+        
+        # Force start trading without waiting for market hours
+        print("🤖 AI Trading Bot Started!")
+        print(f"📈 Monitoring: {', '.join(bot.tickers)}")
+        print(f"🎯 Min Confidence: {bot.min_confidence}")
+        print(f"📊 Max Daily Trades: {bot.max_daily_trades}")
+        print("⏰ Running AI analysis cycle immediately...\n")
+        
+        # Run one analysis cycle immediately
+        bot.run_ai_analysis_cycle()
+        
+        # Then start the normal bot loop
         bot.run_bot()
         
     except ImportError as e:

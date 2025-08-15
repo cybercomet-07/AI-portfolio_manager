@@ -32,10 +32,10 @@ class AITradingBot:
         self.email_reporter = EmailReporter()
         
         # Trading configuration
-        self.min_confidence = float(os.getenv("MIN_CONFIDENCE", 0.7))
-        self.max_daily_trades = int(os.getenv("MAX_DAILY_TRADES", 10))
-        self.risk_tolerance = os.getenv("RISK_TOLERANCE", "moderate")
-        self.max_position_size = float(os.getenv("MAX_POSITION_SIZE", 0.1))
+        self.min_confidence = float(os.getenv("MIN_CONFIDENCE", 0.5))  # Lowered from 0.7 to 0.5
+        self.max_daily_trades = int(os.getenv("MAX_DAILY_TRADES", 15))  # Increased from 10 to 15
+        self.risk_tolerance = os.getenv("RISK_TOLERANCE", "aggressive")  # Changed from moderate to aggressive
+        self.max_position_size = float(os.getenv("MAX_POSITION_SIZE", 0.15))  # Increased from 0.1 to 0.15
         
         # Current stocks to monitor (existing system)
         self.stocks_to_monitor = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "CRM", "PLD", "AVGO"]
@@ -363,6 +363,61 @@ class AITradingBot:
                 print(f"   ❌ Error executing discovery trade for {symbol}: {e}")
                 continue
 
+    def analyze_portfolio_recovery(self):
+        """Analyze existing positions and make recovery trades"""
+        try:
+            print(f"\n🔄 PORTFOLIO RECOVERY ANALYSIS")
+            print("=" * 60)
+            
+            # Get current positions
+            positions = self.alpaca_api.list_positions()
+            if not positions:
+                print("   ℹ️ No positions to analyze")
+                return
+            
+            print(f"   📊 Analyzing {len(positions)} existing positions...")
+            
+            for position in positions:
+                symbol = position.symbol
+                qty = int(float(position.qty))
+                current_value = float(position.market_value)
+                unrealized_pl = float(position.unrealized_pl)
+                unrealized_pl_pct = float(position.unrealized_plpc) * 100
+                
+                print(f"\n   🔍 Position: {symbol}")
+                print(f"      Shares: {qty}")
+                print(f"      Value: ${current_value:.2f}")
+                print(f"      P&L: ${unrealized_pl:.2f} ({unrealized_pl_pct:.2f}%)")
+                
+                # If position is losing more than 5%, consider recovery action
+                if unrealized_pl_pct < -5:
+                    print(f"      ⚠️ Position losing {abs(unrealized_pl_pct):.2f}% - Analyzing recovery...")
+                    
+                    # Get AI analysis for recovery
+                    indicators = self.ai_engine.get_technical_indicators(symbol)
+                    if indicators:
+                        decision = self.ai_engine.get_ai_decision(symbol, indicators)
+                        
+                        if decision and decision.get('action') == 'buy':
+                            confidence = decision.get('confidence', 0)
+                            print(f"      🤖 AI suggests BUY for recovery (Confidence: {confidence:.2f})")
+                            
+                            # Execute recovery trade if confidence is good
+                            if confidence >= 0.4:  # Lower threshold for recovery
+                                print(f"      🚀 Executing recovery trade...")
+                                if self.execute_ai_trade(symbol, 'buy', decision):
+                                    print(f"      ✅ Recovery trade executed for {symbol}")
+                                else:
+                                    print(f"      ❌ Recovery trade failed for {symbol}")
+                        else:
+                            print(f"      ⏸️ No recovery action suggested by AI")
+                
+                # Rate limiting
+                time.sleep(2)
+                
+        except Exception as e:
+            print(f"   ❌ Error in portfolio recovery analysis: {e}")
+    
     def run_ai_analysis_cycle(self):
         """Run one complete AI analysis cycle"""
         print(f"\n🧠 AI ANALYSIS CYCLE STARTED - {datetime.now().strftime('%H:%M:%S')}")
@@ -415,6 +470,9 @@ class AITradingBot:
             opportunities = self.discover_new_stocks()
             if opportunities:
                 self.execute_discovery_trades(opportunities)
+        
+        # Portfolio recovery analysis (every cycle)
+        self.analyze_portfolio_recovery()
         
         print(f"\n✔ AI Analysis Cycle Complete - Daily trades: {daily_trades}/{self.max_daily_trades}")
         return daily_trades

@@ -84,7 +84,7 @@ class EmailReporter:
                     </div>
                     <div class="metric">
                         <strong>Profitable Trades:</strong><br>
-                        {profitable_trades}/{total_trades} ({profitable_trades/total_trades*100:.1f}% if total_trades > 0 else 0}%)
+                        {profitable_trades}/{total_trades} ({(profitable_trades/total_trades*100) if total_trades > 0 else 0:.1f}%)
                     </div>
                     <div class="metric">
                         <strong>Total P&L:</strong><br>

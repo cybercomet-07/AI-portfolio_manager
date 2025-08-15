@@ -1,0 +1,59 @@
+# ========================================
+# AI TRADING BOT - ENVIRONMENT VARIABLES
+# ========================================
+# Copy this file to .env and fill in your API keys
+
+# ========================================
+# ALPACA API KEYS (Paper Trading)
+# ========================================
+# Get from: https://app.alpaca.markets/paper/dashboard/overview
+ALPACA_API_KEY=your_alpaca_api_key_here
+ALPACA_SECRET_KEY=your_alpaca_secret_key_here
+
+# ========================================
+# GOOGLE GEMINI API KEY
+# ========================================
+# Get from: https://makersuite.google.com/app/apikey
+# Your key will look like: AIzaSyC_Your_Unique_Key_Here_123456789
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# ========================================
+# TWILIO WHATSAPP API KEYS
+# ========================================
+# Get from: https://console.twilio.com/
+TWILIO_ACCOUNT_SID=your_twilio_account_sid_here
+TWILIO_AUTH_TOKEN=your_twilio_auth_token_here
+
+# ========================================
+# WHATSAPP NUMBERS
+# ========================================
+# Twilio WhatsApp number (usually fixed)
+FROM_WHATSAPP_NUMBER=whatsapp:+14155238886
+# Your WhatsApp number (add your country code)
+TO_WHATSAPP_NUMBER=whatsapp:+your_phone_number_here
+
+# ========================================
+# TELEGRAM BOT CONFIGURATION
+# ========================================
+# Bot token (already set)
+TELEGRAM_BOT_TOKEN=8242945520:AAHfsijFpaY2oRK95dQGVmD0VpaiOEGChlA
+# Your chat ID (replace with your actual chat ID)
+TELEGRAM_CHAT_ID=1118758003
+
+# ========================================
+# TRADING CONFIGURATION
+# ========================================
+# Minimum AI confidence for trades (0.0-1.0)
+MIN_CONFIDENCE=0.7
+# Maximum trades per day
+MAX_DAILY_TRADES=10
+# Risk tolerance: conservative, moderate, aggressive
+RISK_TOLERANCE=moderate
+# Maximum position size as % of portfolio (0.0-1.0)
+MAX_POSITION_SIZE=0.1
+
+# ========================================
+# STOCKS TO MONITOR
+# ========================================
+# Add or remove stock symbols as needed
+# Default: AAPL, MSFT, GOOGL, AMZN, TSLA, CRM, PLD, AVGO

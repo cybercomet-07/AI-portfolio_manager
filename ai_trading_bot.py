@@ -11,6 +11,7 @@ import alpaca_trade_api as tradeapi
 import yfinance as yf
 import pandas as pd
 from twilio.rest import Client
+import pytz
 
 # Load environment variables
 load_dotenv()
@@ -448,10 +449,10 @@ class AITradingBot:
         
         while True:
             try:
-                # Check if market is open
-                clock = self.alpaca_api.get_clock()
+                # Get market time information safely
+                market_info = self.get_market_time_info()
                 
-                if clock.is_open:
+                if market_info['is_open']:
                     print(f"\n🟢 Market is OPEN - Running AI analysis...")
                     self.run_ai_analysis_cycle()
                     
@@ -459,12 +460,15 @@ class AITradingBot:
                     print("II Sleeping for 30 minutes...")
                     time.sleep(1800)  # 30 minutes
                 else:
-                    next_open = clock.next_open
-                    time_until_open = next_open - datetime.now()
-                    hours_until_open = time_until_open.total_seconds() / 3600
+                    # Use safe market time info
+                    next_open = market_info['next_open']
+                    current_time = market_info['current_time']
+                    hours_until_open = market_info['hours_until_open']
                     
                     print(f"\n🔴 Market is CLOSED")
-                    print(f"   Next open: {next_open.strftime('%Y-%m-%d %H:%M:%S')}")
+                    if next_open:
+                        print(f"   Next open: {next_open.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+                    print(f"   Current time: {current_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
                     print(f"   Time until open: {hours_until_open:.1f} hours")
                     
                     # Sleep until market opens (check every hour)
@@ -474,7 +478,49 @@ class AITradingBot:
                     
             except Exception as e:
                 print(f"❌ Error in main bot loop: {e}")
+                print(f"   Error type: {type(e).__name__}")
+                print(f"   Error details: {str(e)}")
+                print(f"   Stack trace: {e.__traceback__}")
                 time.sleep(300)  # Wait 5 minutes before retrying
+
+    def get_market_time_info(self):
+        """Safely get market time information with proper timezone handling"""
+        try:
+            clock = self.alpaca_api.get_clock()
+            
+            # Get next market open time
+            next_open = clock.next_open
+            
+            # Get current time in the same timezone as market data
+            if next_open.tzinfo:
+                current_time = datetime.now(next_open.tzinfo)
+            else:
+                # Fallback to UTC if no timezone info
+                current_time = datetime.now(pytz.UTC)
+                next_open = next_open.replace(tzinfo=pytz.UTC)
+            
+            # Calculate time until market opens
+            time_until_open = next_open - current_time
+            hours_until_open = time_until_open.total_seconds() / 3600
+            
+            return {
+                'is_open': clock.is_open,
+                'next_open': next_open,
+                'current_time': current_time,
+                'time_until_open': time_until_open,
+                'hours_until_open': hours_until_open
+            }
+            
+        except Exception as e:
+            print(f"❌ Error getting market time info: {e}")
+            # Return safe defaults
+            return {
+                'is_open': False,
+                'next_open': None,
+                'current_time': datetime.now(),
+                'time_until_open': timedelta(hours=24),
+                'hours_until_open': 24.0
+            }
 
 # Main execution
 if __name__ == "__main__":

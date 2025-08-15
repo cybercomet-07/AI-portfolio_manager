@@ -89,7 +89,7 @@ def test_enhanced_bot():
     try:
         bot = AITradingBot()
         print("✅ Bot initialized successfully")
-        print(f"📈 Monitoring: {', '.join(bot.tickers)}")
+        print(f"📈 Monitoring: {', '.join(bot.stocks_to_monitor)}")
         print(f"📱 Telegram Chat ID: {bot.telegram.chat_id}")
         print(f"📧 Email configured: {'Yes' if bot.email_reporter.email else 'No'}")
     except Exception as e:

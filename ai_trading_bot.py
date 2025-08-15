@@ -65,13 +65,24 @@ class AITradingBot:
     def send_whatsapp_message(self, message):
         """Send WhatsApp notification"""
         try:
-            self.client = Client(self.TWILIO_ACCOUNT_SID, self.TWILIO_AUTH_TOKEN)
-            self.FROM_WHATSAPP_NUMBER = os.getenv("FROM_WHATSAPP_NUMBER", "whatsapp:+14155238886")
-            self.TO_WHATSAPP_NUMBER = os.getenv("TO_WHATSAPP_NUMBER", "whatsapp:+your_phone_number")
-            self.client.messages.create(
+            # Get Twilio credentials from environment
+            twilio_account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+            twilio_auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+            from_whatsapp = os.getenv("FROM_WHATSAPP_NUMBER", "whatsapp:+14155238886")
+            to_whatsapp = os.getenv("TO_WHATSAPP_NUMBER")
+            
+            if not all([twilio_account_sid, twilio_auth_token, to_whatsapp]):
+                print("⚠️ Missing Twilio credentials - skipping WhatsApp notification")
+                return False
+            
+            # Create Twilio client
+            client = Client(twilio_account_sid, twilio_auth_token)
+            
+            # Send message
+            client.messages.create(
                 body=message, 
-                from_=self.FROM_WHATSAPP_NUMBER,
-                to=self.TO_WHATSAPP_NUMBER
+                from_=from_whatsapp,
+                to=to_whatsapp
             )
             print(f"📲 WhatsApp: {message[:50]}...")
             return True
@@ -95,12 +106,22 @@ class AITradingBot:
         # WhatsApp notification
         whatsapp_msg = f"🚀 TRADE EXECUTED!\n\n📈 Stock: {trade_data['symbol']}\n🎯 Action: {trade_data['action']}\n📊 Quantity: {trade_data['quantity']} shares\n💰 Price: ${trade_data['price']:.2f}\n💵 Total: ${trade_data['total']:.2f}\n⏰ Time: {datetime.fromisoformat(trade_data['timestamp']).strftime('%H:%M:%S')}\n\n🤖 AI Confidence: {trade_data.get('ai_confidence', 'N/A')}"
         
-        self.send_whatsapp_message(whatsapp_msg)
+        whatsapp_success = self.send_whatsapp_message(whatsapp_msg)
+        if not whatsapp_success:
+            print("   ⚠️ WhatsApp notification skipped due to missing credentials")
         
         # Telegram notification
         telegram_msg = f"🚀 TRADE EXECUTED!\n\n📈 Stock: {trade_data['symbol']}\n🎯 Action: {trade_data['action']}\n📊 Quantity: {trade_data['quantity']} shares\n💰 Price: ${trade_data['price']:.2f}\n💵 Total: ${trade_data['total']:.2f}\n⏰ Time: {datetime.fromisoformat(trade_data['timestamp']).strftime('%H:%M:%S')}\n\n🤖 AI Confidence: {trade_data.get('ai_confidence', 'N/A')}"
         
-        self.send_telegram_message(telegram_msg)
+        telegram_success = self.send_telegram_message(telegram_msg)
+        if not telegram_success:
+            print("   ⚠️ Telegram notification skipped due to missing credentials")
+        
+        # Log notification status
+        if whatsapp_success or telegram_success:
+            print(f"   ✅ Trade notifications sent successfully")
+        else:
+            print(f"   ⚠️ No notifications sent - check credentials")
 
     def execute_ai_trade(self, symbol, action, decision):
         """Execute AI trading decision"""
@@ -401,10 +422,26 @@ class AITradingBot:
         """Main bot loop"""
         print("🚀 Starting AI Portfolio Manager...")
         
-        # Send startup notifications
+        # Send startup notifications (with error handling)
         startup_message = "🤖 AI Portfolio Manager is now running 24/7!"
-        self.send_telegram_message(startup_message)
-        self.send_whatsapp_message(startup_message)
+        
+        # Try Telegram first
+        try:
+            if os.getenv("TELEGRAM_CHAT_ID"):
+                self.send_telegram_message(startup_message)
+            else:
+                print("⚠️ TELEGRAM_CHAT_ID not set - skipping Telegram message")
+        except Exception as e:
+            print(f"⚠️ Telegram startup message failed: {e}")
+        
+        # Try WhatsApp second
+        try:
+            if os.getenv("TWILIO_ACCOUNT_SID") and os.getenv("TWILIO_AUTH_TOKEN") and os.getenv("TO_WHATSAPP_NUMBER"):
+                self.send_whatsapp_message(startup_message)
+            else:
+                print("⚠️ Missing Twilio credentials - skipping WhatsApp message")
+        except Exception as e:
+            print(f"⚠️ WhatsApp startup message failed: {e}")
         
         # Run initial analysis cycle
         self.run_ai_analysis_cycle()

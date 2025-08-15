@@ -49,3 +49,21 @@ MAX_POSITION_SIZE=0.1
 # ========================================
 # Add or remove stock symbols as needed
 # Default: AAPL, MSFT, GOOGL, AMZN, TSLA, CRM, PLD, AVGO
+
+# ========================================
+# TELEGRAM BOT CONFIGURATION
+# ========================================
+# Bot token (already set)
+TELEGRAM_BOT_TOKEN=8242945520:AAHfsijFpaY2oRK95dQGVmD0VpaiOEGChlA
+# Your chat ID (get this by messaging your bot)
+TELEGRAM_CHAT_ID=your_telegram_chat_id_here
+
+# ========================================
+# EMAIL CONFIGURATION (Weekly Reports)
+# ========================================
+# Gmail address for sending reports
+EMAIL_ADDRESS=your_email@gmail.com
+# Gmail app password (not your regular password)
+EMAIL_PASSWORD=your_gmail_app_password
+# Email address to receive reports
+TO_EMAIL_ADDRESS=your_email@gmail.com

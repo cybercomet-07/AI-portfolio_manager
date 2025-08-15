@@ -71,7 +71,10 @@ requirements.txt          # Dependencies
 
 - 🤖 AI-powered trading decisions
 - 📊 Paper trading with Alpaca
-- 📱 WhatsApp notifications
+- 📱 Multi-platform notifications:
+  - WhatsApp alerts for instant trade notifications
+  - Telegram alerts for daily summaries and detailed trade alerts
+  - Email reports for weekly profit/loss analysis
 - 📈 Portfolio tracking
 - ⚡ Automated execution
 

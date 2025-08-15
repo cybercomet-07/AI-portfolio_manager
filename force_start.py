@@ -22,12 +22,18 @@ def force_start():
         bot = AITradingBot()
         print("✅ Bot initialized")
         
-        # Send immediate test message
+        # Send immediate test messages
         try:
             bot.send_whatsapp_message("🚀 FORCE START: AI Bot is running 24/7!")
-            print("✅ Force start message sent")
+            print("✅ WhatsApp force start message sent")
         except Exception as e:
-            print(f"⚠️ WhatsApp failed: {e}")
+            print(f"⚠️ WhatsApp test failed: {e}")
+        
+        try:
+            bot.telegram.send_startup_message()
+            print("✅ Telegram startup message sent")
+        except Exception as e:
+            print(f"⚠️ Telegram test failed: {e}")
         
         # Run AI analysis immediately
         print("🔍 Running AI analysis cycle...")

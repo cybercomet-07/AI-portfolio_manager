@@ -1,1 +1,1 @@
-worker: python railway_worker.py
+worker: python force_start.py

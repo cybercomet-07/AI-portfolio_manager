@@ -10,6 +10,8 @@ import os
 # Import our custom modules
 from ai_trading_engine import AITradingEngine
 from portfolio_tracker import PortfolioTracker
+from telegram_notifier import TelegramNotifier
+from email_reporter import EmailReporter
 
 class AITradingBot:
     def __init__(self):
@@ -35,6 +37,12 @@ class AITradingBot:
         # 📊 Portfolio Tracker
         self.portfolio_tracker = PortfolioTracker(self.api)
         
+        # 📱 Telegram Notifier
+        self.telegram = TelegramNotifier()
+        
+        # 📧 Email Reporter
+        self.email_reporter = EmailReporter()
+        
         # 📈 Trading Configuration
         self.tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "CRM", "PLD", "AVGO"]
         self.min_confidence = 0.7  # Minimum AI confidence for trades
@@ -45,6 +53,7 @@ class AITradingBot:
         # 📝 Logging
         self.trading_log_file = "ai_trading_log.csv"
         self.decision_log_file = "ai_decisions.json"
+        self.weekly_trades = []  # Track weekly trades for email reports
         
     def send_whatsapp_message(self, message):
         """Send WhatsApp notification"""
@@ -57,6 +66,70 @@ class AITradingBot:
             print(f"📲 WhatsApp: {message}")
         except Exception as e:
             print(f"❌ WhatsApp Error: {e}")
+    
+    def send_telegram_message(self, message):
+        """Send Telegram notification"""
+        try:
+            self.telegram.send_message(message)
+        except Exception as e:
+            print(f"❌ Telegram Error: {e}")
+    
+    def send_trade_notifications(self, trade_data):
+        """Send trade notifications via WhatsApp and Telegram"""
+        try:
+            # WhatsApp notification
+            msg = f"🤖 AI TRADE:\n{trade_data['symbol']} {trade_data['action']} @ ${trade_data['price']:.2f}\nConfidence: {trade_data['confidence']:.1f}%"
+            self.send_whatsapp_message(msg)
+            
+            # Telegram notification
+            self.telegram.send_trade_alert(trade_data)
+            
+        except Exception as e:
+            print(f"❌ Error sending trade notifications: {e}")
+    
+    def send_daily_summary(self):
+        """Send daily summary via Telegram"""
+        try:
+            portfolio = self.portfolio_tracker.get_current_portfolio()
+            if portfolio:
+                # Get today's trades from log
+                today_trades = self.get_todays_trades()
+                self.telegram.send_daily_summary(portfolio, today_trades)
+        except Exception as e:
+            print(f"❌ Error sending daily summary: {e}")
+    
+    def send_weekly_email_report(self):
+        """Send weekly email report"""
+        try:
+            portfolio = self.portfolio_tracker.get_current_portfolio()
+            if portfolio and self.weekly_trades:
+                self.email_reporter.send_weekly_report(portfolio, self.weekly_trades, {})
+        except Exception as e:
+            print(f"❌ Error sending weekly email report: {e}")
+    
+    def get_todays_trades(self):
+        """Get today's trades from log file"""
+        try:
+            today_trades = []
+            if os.path.exists(self.trading_log_file):
+                with open(self.trading_log_file, 'r') as f:
+                    for line in f:
+                        parts = line.strip().split(',')
+                        if len(parts) >= 6:
+                            trade_time = datetime.strptime(parts[0], '%Y-%m-%d %H:%M:%S.%f')
+                            if trade_time.date() == datetime.now().date():
+                                today_trades.append({
+                                    'timestamp': parts[0],
+                                    'symbol': parts[1],
+                                    'action': parts[2],
+                                    'price': float(parts[3]),
+                                    'shares': int(parts[4]),
+                                    'confidence': float(parts[5])
+                                })
+            return today_trades
+        except Exception as e:
+            print(f"❌ Error getting today's trades: {e}")
+            return []
     
     def reset_daily_trades(self):
         """Reset daily trade counter if it's a new day"""
@@ -173,9 +246,30 @@ class AITradingBot:
                 print(f"🤖 AI HOLD: {symbol} - {reasoning[:100]}...")
                 return False
             
-            # Send notification and log
-            self.send_whatsapp_message(msg)
-            self.log_trade(symbol, action, current_price, shares, confidence, reasoning)
+            # Send notifications and log
+            trade_data = {
+                'symbol': symbol,
+                'action': action,
+                'price': current_price,
+                'shares': shares if action == 'BUY' else current_position,
+                'confidence': confidence,
+                'reasoning': reasoning
+            }
+            
+            # Send notifications via WhatsApp and Telegram
+            self.send_trade_notifications(trade_data)
+            
+            # Log trade
+            self.log_trade(symbol, action, current_price, shares if action == 'BUY' else current_position, confidence, reasoning)
+            
+            # Add to weekly trades for email reports
+            self.weekly_trades.append(trade_data)
+            
+            # Increment daily trade counter
+            self.daily_trades += 1
+            
+            print(f"✅ Trade executed: {msg}")
+            return True
             self.daily_trades += 1
             
             print(f"✅ {msg}")
